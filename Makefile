@@ -16,6 +16,7 @@ help:
 	@echo "  logs odoo			 View logs of the Odoo container"
 	@echo "  logs db			 View logs of the PostgreSQL container"
 	@echo "  addon <addon_name>	 	 Restart instance and update specified addon"
+	@echo "	 graph			 	 Git Graph"
 
 start:
 	$(DOCKER_COMPOSE) up -d
@@ -57,4 +58,9 @@ endef
 addon: restart
 	$(call upgrade_addon,$(word 2,$(MAKECMDGOALS)))
 
-.PHONY: start stop restart console psql logs odoo db addon
+
+#git
+graph:
+	git log --graph --oneline --all --decorate
+
+.PHONY: start stop restart console psql logs odoo db addon graph
