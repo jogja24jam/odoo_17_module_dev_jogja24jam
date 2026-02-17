@@ -8,13 +8,14 @@ help:
 	@echo ""
 	@echo "===============   Makefile for Odoo 17 Module Development   ==============="
 	@echo "Available commands:"
-	@echo "  start		 Start the Odoo and PostgreSQL containers"
-	@echo "  stop		 Stop the Odoo and PostgreSQL containers"
-	@echo "  restart	 Restart the Odoo and PostgreSQL containers"
-	@echo "  console 	 Access the Odoo container shell"
-	@echo "  psql		 Access the PostgreSQL database shell"
-	@echo "  logs odoo	 View logs of the Odoo container"
-	@echo "  logs db	 View logs of the PostgreSQL container"
+	@echo "  start				 Start the Odoo and PostgreSQL containers"
+	@echo "  stop				 Stop the Odoo and PostgreSQL containers"
+	@echo "  restart			 Restart the Odoo and PostgreSQL containers"
+	@echo "  console 			 Access the Odoo container shell"
+	@echo "  psql				 Access the PostgreSQL database shell"
+	@echo "  logs odoo			 View logs of the Odoo container"
+	@echo "  logs db			 View logs of the PostgreSQL container"
+	@echo "  addon <addon_name>	 	 Restart instance and update specified addon"
 
 start:
 	$(DOCKER_COMPOSE) up -d
@@ -44,4 +45,16 @@ endef
 logs:
 	$(call log_target,$(word 2,$(MAKECMDGOALS)))
 
-.PHONY: start stop restart console psql logs odoo db
+define upgrade_addon
+	$(DOCKER) exec -it $(CONTAINER_ODOO) odoo \
+		--db_host=$(CONTAINER_DB) \
+		-d $(WEB_DB_NAME) \
+		-r $(CONTAINER_ODOO) \
+		-w $(CONTAINER_ODOO) \
+		-u $(1)
+endef
+
+addon: restart
+	$(call upgrade_addon,$(word 2,$(MAKECMDGOALS)))
+
+.PHONY: start stop restart console psql logs odoo db addon
