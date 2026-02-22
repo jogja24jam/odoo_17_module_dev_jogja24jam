@@ -5,11 +5,13 @@
         <field name="name">estate.property.offer.view.tree</field>
         <field name="model">estate.property.offer</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree decoration-success="status == 'accepted'" decoration-danger="status == 'refused'">
                 <field name="price"/>
                 <field name="partner_id"/>
                 <field name="validity"/>
                 <field name="date_deadline"/>
+                <button name="action_accept" string="Accept" icon="fa-check" type="object"/>
+                <button name="action_refuse" string="Refuse" icon="fa-times" type="object"/>
                 <field name="status"/>
             </tree>
         </field>
