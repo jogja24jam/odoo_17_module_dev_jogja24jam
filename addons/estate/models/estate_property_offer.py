@@ -1,10 +1,14 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.exceptions import ValidationError
 from datetime import timedelta
 
 class EstatePropertyOffer(models.Model):
     _name = 'estate.property.offer'
     _description = 'Estate Property Offer'
+    _sql_constraints = [
+        ('check_price', 'CHECK(price > 0)', 'The offer price must be strictly positive.'),
+    ]
 
     price = fields.Float()
     status = fields.Selection(

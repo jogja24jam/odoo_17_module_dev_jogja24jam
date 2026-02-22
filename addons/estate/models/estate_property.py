@@ -1,10 +1,16 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.exceptions import ValidationError
+from odoo.tools.float_utils import float_compare, float_is_zero
 from dateutil.relativedelta import relativedelta
 
 class EstateProperty(models.Model):
     _name = 'estate.property'
     _description = 'Estate Property'
+    _sql_constraints = [
+        ('check_expected_price', 'CHECK(expected_price > 0)', 'The expected price must be strictly positive.'),
+        ('check_selling_price', 'CHECK(selling_price >= 0)', 'The selling price must be positive.'),
+    ]
 
     name = fields.Char("Title", required=True)
     description = fields.Text()
@@ -65,6 +71,26 @@ class EstateProperty(models.Model):
             else:
                 record.best_price = 0.0
 
+    @api.constrains('selling_price', 'expected_price')
+    def _check_selling_price(self):
+        for record in self:
+            if float_is_zero(record.selling_price, precision_digits=2):
+                continue
+            minimum_selling_price = record.expected_price * 0.9
+            if float_compare(record.selling_price, minimum_selling_price, precision_digits=2) < 0:
+                raise ValidationError(
+                    _("The selling price cannot be lower than 90%% of the expected price.")
+                )
+
+    @api.constrains('selling_price', 'expected_price')
+    def _check_selling_price(self):
+        for record in self:
+            if not float_is_zero(record.selling_price, precision_digits=2):
+                if float_compare(record.selling_price, record.expected_price * 0.9, precision_digits=2) < 0:
+                    raise ValidationError(
+                        _("The selling price cannot be lower than 90% of the expected price.")
+                    )
+
     @api.onchange('garden')
     def _onchange_garden(self):
         if self.garden:
@@ -93,3 +119,5 @@ class EstateProperty(models.Model):
                 raise UserError(_("Sold properties cannot be canceled."))
             record.state = 'canceled'
         return True
+
+    
